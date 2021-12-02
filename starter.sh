@@ -34,17 +34,25 @@ code_file="./${day_pad}.py"
 
 ##############################
 # Download puzzle input
+echo "================================"
 echo "Check the puzzle at ${daily_url}"
-echo "Downloading input from ${input_url}"
-curl --cookie "session=${TOKEN}" "$input_url" --output "$input_file"
+echo "================================"
 
-if grep -q -e "Please don't .* before it unlocks!" -e "404 Not Found" "$input_file"
+if [ -f "$input_file" ]
 then
-    echo "Puzzle for day ${day} not accessible!"
-    rm "$input_file"
-    exit
+    echo "Solution file $input_file already exists."
 else
-    echo "Check the input file ${input_file}"
+    echo "Downloading input from ${input_url}"
+    curl --cookie "session=${TOKEN}" "$input_url" --output "$input_file"
+
+    if grep -q -e "Please don't .* before it unlocks!" -e "404 Not Found" "$input_file"
+    then
+        echo "Puzzle for day ${day} not accessible!"
+        rm "$input_file"
+        exit
+    else
+        echo "Check the input file ${input_file}"
+    fi
 fi
 
 
