@@ -3,6 +3,7 @@
 YEAR=2021
 TOKEN=$(cat aoc_token.txt)
 # find your token like this https://github.com/wimglenn/advent-of-code-wim/issues/1
+# and save to file 'aoc_token.txt' - add it to .gitignore to not share
 
 
 ##############################
