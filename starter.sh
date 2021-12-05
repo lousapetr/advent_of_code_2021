@@ -74,6 +74,8 @@ cat <<EOF >"${code_file}"
 import pandas as pd
 from wrapper import Wrapper
 
+# ${daily_url}
+
 
 class Solver(Wrapper):
 
