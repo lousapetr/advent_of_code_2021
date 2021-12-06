@@ -35,4 +35,4 @@ class Wrapper:
         return df
 
     def parse2intlist(self, path):
-        return [int(i) for i in self.list_parser(path)]
+        return [int(i) for i in self.parse2list(path)]
