@@ -23,8 +23,8 @@ class Solver(Wrapper):
         pass
 
 
-# solver = Solver(DAY_NUMBER, example=True, show=False)
-solver = Solver(DAY_NUMBER, example=False)
+solver = Solver(DAY_NUMBER, example=True, show=True)
+# solver = Solver(DAY_NUMBER, example=False)
 
 print('=' * 15)
 print("Part 1:")
