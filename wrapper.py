@@ -13,7 +13,8 @@ class Wrapper:
         self,
         example: bool = False,
         show: bool = True,
-        path: str = None
+        path: str = None,
+        **kwargs
     ):
         if path is None:
             if not example:
@@ -21,7 +22,7 @@ class Wrapper:
             else:
                 path = self.example_path
 
-        loaded_input = self.parser(path)
+        loaded_input = self.parser(path, **kwargs)
         if show:
             print(loaded_input)
         return loaded_input
@@ -30,8 +31,12 @@ class Wrapper:
         with open(path) as fp:
             return fp.read().splitlines()
 
-    def parse2pandas(self, path):
-        df = pd.read_csv(path, delimiter=' ', header=None, names=None, dtype=int)
+    def parse2pandas(self, path, **kwargs):
+        kwargs.setdefault('delimiter', ' ')
+        kwargs.setdefault('header', None)
+        kwargs.setdefault('names', None)
+        kwargs.setdefault('dtype', int)
+        df = pd.read_csv(path, **kwargs)
         return df
 
     def parse2intlist(self, path):
