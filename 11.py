@@ -1,61 +1,70 @@
+import wrapper
 import numpy as np
-from wrapper import Wrapper
 import scipy.signal
-from time import perf_counter
 
 # https://adventofcode.com/2021/day/11
 
 
-class Solver(Wrapper):
+class Solver(wrapper.Wrapper):
 
-    def __init__(self, day: int, example: bool, show=False):
-        super().__init__(day=day)
-        self.parser = self.parse2matrix
-        self.example = example
-        self.input = super().load_input(example=self.example, show=show)
-        self.octopi = self.input.copy()
-        self.reset()
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.parser = self.parse_to_array
+        self.input = super().load_input()
+        self.reset_octopi()
 
-    def reset(self):
+    def reset_octopi(self):
         self.octopi = self.input.copy()
 
-    def flashes(self):
-        return self.octopi > 9
+    def flash(self) -> int:
+        """Flash octopi with high enough energy, distribute energy around
 
-    def energize(self, flash):
+        Modifies
+        -------
+        self.octopi
+            - set flashing octopi to large negative number (-100 by default)
+            - add +1 energy to every neighbor of flashing octopus
+
+        Returns
+        -------
+        bool
+            True if any octopus flashed, False otherwise
+        """
+        flashing_octopi = self.octopi > 9
         kernel = np.array([
             [1, 1, 1],
             [1, -100, 1],
             [1, 1, 1]
         ])
-        energy_boost = scipy.signal.convolve2d(flash.astype(int), kernel, mode='same')
-        return energy_boost
+        energy_boost = scipy.signal.convolve2d(flashing_octopi.astype(int), kernel, mode='same')
+        self.octopi += energy_boost
+        return np.any(flashing_octopi)
 
-    def make_step(self):
+    def make_step(self) -> int:
+        """Make one step with repeating cycle of flashing - energy boosting
+
+        Returns
+        -------
+        int
+            number of octopi that flashed during this step
+        """
         self.octopi += 1
-        flash = self.flashes()
-        while np.any(flash):
-            # print(flash)
-            self.octopi[flash] = -100
-            energy_boost = self.energize(flash)
-            # print(energy_boost)
-            self.octopi += energy_boost
-            flash = self.flashes()
-            # print(self.octopi)
+        while self.flash():  # cycle flash-boost until no other flashing is possible
+            pass
         flashed = self.octopi < 0  # octopi that have flashed in this step
         self.octopi[flashed] = 0
         return flashed.sum()
 
     def task_1(self, steps=100):
         flashed_count = 0
-        # print('Before any steps:')
-        # print(self.matrix_str(self.octopi))
+        print('Before any steps:')
+        print(self.array_to_string(self.octopi))
         for i in range(steps):
             flashed_count += self.make_step()
-            # if (i < 10) or ((i + 1) % 10 == 0):
-            #     print(f'\nAfter {i + 1} steps:')
-            #     print(f'{flashed_count} octopi flashed yet.')
-            #     print(self.matrix_str(self.octopi))
+            if (i < 10) or ((i + 1) % 10 == 0):
+                print(f'\nAfter {i + 1} steps:')
+                print(f'{flashed_count} octopi flashed yet.')
+                print(self.array_to_string(self.octopi))
 
         return flashed_count
 
@@ -68,18 +77,14 @@ class Solver(Wrapper):
                 return i
 
 
-# solver = Solver(11, example=True, show=True)
-solver = Solver(11, example=False)
+part = 2
+solve_example = False
+example_solutions = [1656, 195]
 
-start_time_1 = perf_counter()
-print('=' * 15)
-print("Part 1:")
-print(solver.task_1(steps=100))  # == 1656
-print(f'Task 1 took {(perf_counter() - start_time_1) * 1000:,.3f} ms.')
-
-start_time_1 = perf_counter()
-solver.reset()
-print('=' * 15)
-print("Part 2:")
-print(solver.task_2())  # == 195
-print(f'Task 2 took {(perf_counter() - start_time_1) * 1000:,.3f} ms.')
+solver = Solver(day=11, example=solve_example, example_solutions=example_solutions)
+if solve_example:
+    solver.print_input()
+solver.solve_task(1, timing=True)
+if part > 1:
+    solver.reset_octopi()
+    solver.solve_task(2)
