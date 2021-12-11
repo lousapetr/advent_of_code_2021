@@ -1,7 +1,6 @@
 import numpy as np
-import pandas as pd
 from wrapper import Wrapper
-from scipy.signal import convolve2d
+import scipy.signal
 
 # https://adventofcode.com/2021/day/11
 
@@ -16,11 +15,6 @@ class Solver(Wrapper):
         self.octopi = self.input.copy()
         self.reset()
 
-    def parse_custom(self, path):
-        line_list = self.parse2list(path)
-        matrix = [[int(i) for i in x] for x in line_list if x[0] != '#']
-        return np.array(matrix)
-
     def reset(self):
         self.octopi = self.input.copy()
 
@@ -33,7 +27,7 @@ class Solver(Wrapper):
             [1, -100, 1],
             [1, 1, 1]
         ])
-        energy_boost = convolve2d(flash.astype(int), kernel, mode='same')
+        energy_boost = scipy.signal.convolve2d(flash.astype(int), kernel, mode='same')
         return energy_boost
 
     def make_step(self):
@@ -66,15 +60,21 @@ class Solver(Wrapper):
         return flashed_count
 
     def task_2(self):
-        pass
+        i = 0
+        while True:
+            i += 1
+            self.make_step()
+            if np.all(self.octopi == 0):
+                return i
 
 
-solver = Solver(11, example=True, show=True)
-# solver = Solver(11, example=False)
+# solver = Solver(11, example=True, show=True)
+solver = Solver(11, example=False)
 
 print('=' * 15)
 print("Part 1:")
 print(solver.task_1(steps=100))  # == 1656
-# print('=' * 15)
-# print("Part 2:")
-# print(solver.task_2())  # == example solution
+solver.reset()
+print('=' * 15)
+print("Part 2:")
+print(solver.task_2())  # == 195
