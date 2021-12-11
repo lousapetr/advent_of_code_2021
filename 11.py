@@ -1,6 +1,7 @@
 import numpy as np
 from wrapper import Wrapper
 import scipy.signal
+from time import perf_counter
 
 # https://adventofcode.com/2021/day/11
 
@@ -47,16 +48,15 @@ class Solver(Wrapper):
 
     def task_1(self, steps=100):
         flashed_count = 0
-        print('Before any steps:')
-        print(self.matrix_str(self.octopi))
+        # print('Before any steps:')
+        # print(self.matrix_str(self.octopi))
         for i in range(steps):
             flashed_count += self.make_step()
-            if (i < 10) or ((i + 1) % 10 == 0):
-                print(f'\nAfter {i + 1} steps:')
-                print(f'{flashed_count} octopi flashed yet.')
-                print(self.matrix_str(self.octopi))
+            # if (i < 10) or ((i + 1) % 10 == 0):
+            #     print(f'\nAfter {i + 1} steps:')
+            #     print(f'{flashed_count} octopi flashed yet.')
+            #     print(self.matrix_str(self.octopi))
 
-        print("\nResult:")
         return flashed_count
 
     def task_2(self):
@@ -71,10 +71,15 @@ class Solver(Wrapper):
 # solver = Solver(11, example=True, show=True)
 solver = Solver(11, example=False)
 
+start_time_1 = perf_counter()
 print('=' * 15)
 print("Part 1:")
 print(solver.task_1(steps=100))  # == 1656
+print(f'Task 1 took {(perf_counter() - start_time_1) * 1000:,.3f} ms.')
+
+start_time_1 = perf_counter()
 solver.reset()
 print('=' * 15)
 print("Part 2:")
 print(solver.task_2())  # == 195
+print(f'Task 2 took {(perf_counter() - start_time_1) * 1000:,.3f} ms.')
