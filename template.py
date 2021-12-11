@@ -1,5 +1,3 @@
-import numpy as np
-import pandas as pd
 from wrapper import Wrapper
 
 # https://adventofcode.com/2021/day/DAY_NUMBER
@@ -7,13 +5,12 @@ from wrapper import Wrapper
 
 class Solver(Wrapper):
 
-    def __init__(self, day: int, example: bool, show=False):
-        super().__init__(day=day)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.parser = self.parse_custom
-        self.example = example
-        self.input = super().load_input(example=self.example, show=show)
+        self.input = super().load_input()
 
-    def parse_custom(self, path):
+    def parse_custom(self):
         pass
 
     def task_1(self):
@@ -23,12 +20,13 @@ class Solver(Wrapper):
         pass
 
 
-solver = Solver(DAY_NUMBER, example=True, show=True)
-# solver = Solver(DAY_NUMBER, example=False)
+part = 1
+solve_example = True
+example_solutions = [MISSING, None]
 
-print('=' * 15)
-print("Part 1:")
-print(solver.task_1())  # == example solution
-# print('=' * 15)
-# print("Part 2:")
-# print(solver.task_2())  # == example solution
+solver = Solver(day=DAY_NUMBER, example=solve_example, example_solutions=example_solutions)
+if solve_example:
+    solver.print_input()
+solver.solve_task(1)
+if part > 1:
+    solver.solve_task(2)
