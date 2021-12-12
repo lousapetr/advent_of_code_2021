@@ -155,6 +155,8 @@ class Wrapper:
         time_fmt : str, optional
             format for printing elapsed time, by default ',.1f'
         """
+        print('=' * 15)
+        print(f'Task {task_number}')
         if verbose is None:
             verbose = self.example  # be verbose if solving example
 
@@ -174,8 +176,6 @@ class Wrapper:
                 end_time = time.perf_counter()
 
         time_ms = (end_time - start_time) * 1000
-        print('=' * 15)
-        print(f'Task {task_number}')
         print(f'Elapsed time: {time_ms:{time_fmt}} ms')
         if self.example:
             example_solution = self.example_solutions[task_number - 1]
