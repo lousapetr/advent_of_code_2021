@@ -77,8 +77,9 @@ class Wrapper:
         List[str]
             list of lines as strings
         """
-        with open(path) as fp:
-            return fp.read().splitlines()
+        with open(path) as f:
+            lines = f.readlines()
+            return [line.strip() for line in lines if not line.startswith(comment)]
 
     def parse_to_pandas_df(self, path: str, **kwargs) -> pd.DataFrame:
         """Parse input file to pandas dataframe, can specify delimiter, header, names, dtype or other
