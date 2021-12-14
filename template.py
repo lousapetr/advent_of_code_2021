@@ -10,8 +10,10 @@ class Solver(Wrapper):
         self.parser = self.parse_custom
         self.input = super().load_input()
 
-    def parse_custom(self):
-        pass
+    def parse_custom(self, path):
+        with open(path) as f:
+            for line in f:
+                pass
 
     def task_1(self):
         pass
