@@ -12,51 +12,39 @@ class CaveSystem:
 
     def __init__(self, map_array) -> None:
         self.riskmap = map_array
-        self.visited = np.full_like(map_array, fill_value=False, dtype=bool)
-        self.cost_to_reach = np.full_like(map_array, fill_value=self.COST_UNREACHED, dtype=int)
-        self.riskmap[0, 0] = 0
-        self.cost_to_reach[0, 0] = 0
+        self.visited_cost = dict()  # cost to reach visited caves, key = (row, col), value = cost
+        self.unvisited_cost = {(0, 0): 0}  # cost to reach unvisited caves
 
-    def visit_node(self, coords: Tuple[int, int]) -> None:
+    def visit_cave(self, coords: Tuple[int, int]) -> None:
+        cost_current_cave = self.unvisited_cost.pop(coords)
+        self.visited_cost[coords] = cost_current_cave
         neighbors = self.get_unvisited_neighbors(coords)
         for n in neighbors:
-            current_cost = self.cost_to_reach[n]
-            cost_trial = self.cost_to_reach[coords] + self.riskmap[n]
-            if cost_trial < current_cost:
-                self.cost_to_reach[n] = cost_trial
-        self.visited[coords] = True
+            current_cost = self.unvisited_cost.setdefault(n, self.COST_UNREACHED)
+            cost_trial = cost_current_cave + self.riskmap[n]
+            self.unvisited_cost[n] = min(cost_trial, current_cost)
 
     def get_unvisited_neighbors(self, coords: Tuple[int, int]) -> List[Tuple[int, int]]:
-        row_count, col_count = self.riskmap.shape
-        coord_row, coord_col = coords
-        neighbors = []
-        for r in (coord_row - 1, coord_row + 1):
-            if 0 <= r < row_count:
-                neighbors.append((r, coord_col))
-        for c in (coord_col - 1, coord_col + 1):
-            if 0 <= c < col_count:
-                neighbors.append((coord_row, c))
-        return [n for n in neighbors if not self.visited[n]]
+        max_row, max_col = self.riskmap.shape
+        cave_row, cave_col = coords
+        neighbors = [
+            (max(0, cave_row - 1), cave_col),
+            (min(cave_row + 1, max_row - 1), cave_col),
+            (cave_row, max(cave_col - 1, 0)),
+            (cave_row, min(cave_col + 1, max_col - 1))
+        ]
+        return [n for n in neighbors if n not in self.visited_cost]
 
     def find_cheapest_unvisited(self) -> Tuple[int, int]:
-        minimum = np.min(self.cost_to_reach[~self.visited])
-        min_indices = np.where(self.cost_to_reach == minimum)
-        for coords in zip(*min_indices):
-            if not self.visited[coords]:
-                return coords
+        d = self.unvisited_cost
+        return min(d, key=d.get)  # https://stackoverflow.com/a/3282904/9003767
 
     def find_best_route(self) -> int:
-        # start_node = (0, 0)
-        destination_node = tuple(x - 1 for x in self.riskmap.shape)
-        # current_node = start_node
-        while not self.visited[destination_node]:
-            # print(self.cost_to_reach)
-            # print(self.visited.astype(int))
-            current_node = self.find_cheapest_unvisited()
-            if self.visited.sum() % 1000 == 0:
-                print(self.visited.sum(), current_node, self.cost_to_reach[current_node])
-            self.visit_node(current_node)
-        return self.cost_to_reach[destination_node]
+        destination_cave = tuple(x - 1 for x in self.riskmap.shape)
+        while destination_cave not in self.visited_cost:
+            current_cave = self.find_cheapest_unvisited()
+            self.visit_cave(current_cave)
+        return self.visited_cost[destination_cave]
 
 
 class Solver(Wrapper):
@@ -70,30 +58,26 @@ class Solver(Wrapper):
         caves = CaveSystem(self.input)
         return caves.find_best_route()
 
-    def task_2(self):
-        added_risk_blocks = np.array([
-            [0, 1, 2, 3, 4],
-            [1, 2, 3, 4, 5],
-            [2, 3, 4, 5, 6],
-            [3, 4, 5, 6, 7],
-            [4, 5, 6, 7, 8]
-        ])
-        added_risk_matrix = np.kron(
-            added_risk_blocks,
-            np.ones_like(self.input),
-        )
-        large_map_orig_risk = np.kron(
+    def enlarge_map(self, input_map):
+        def added_risk_matrix(input_map):
+            """Calculate block matrix of 000-111-...-444"""
+            x_idx, y_idx = np.indices(input_map.shape)
+            x_risk = x_idx // (input_map.shape[0] // 5)
+            y_risk = y_idx // (input_map.shape[1] // 5)
+            return x_risk + y_risk
+        # Kronecker product
+        large_map_orig_risk = np.kron(  # copy input_map to 5x5 blocks
             np.ones((5, 5)),
-            self.input
+            input_map
         )
-        large_map_increased_risk = large_map_orig_risk + added_risk_matrix
-        large_map_increased_risk_wrapped = np.where(
-            large_map_increased_risk > 9,
-            large_map_increased_risk % 9,
-            large_map_increased_risk
-        )
-        print(large_map_increased_risk_wrapped.shape)
-        caves = CaveSystem(large_map_increased_risk_wrapped)
+        large_map_increased_risk = large_map_orig_risk + added_risk_matrix(large_map_orig_risk)
+        # wrap numbers to sequence 1-2-3-...-8-9-1-2-..-8-9-...
+        large_map_increased_risk_wrapped = (large_map_increased_risk - 1) % 9 + 1
+        return large_map_increased_risk_wrapped
+
+    def task_2(self):
+        large_map = self.enlarge_map(self.input)
+        caves = CaveSystem(large_map)
         return caves.find_best_route()
 
 
@@ -106,4 +90,4 @@ if solve_example:
     solver.print_input()
 solver.solve_task(1)
 if part > 1:
-    solver.solve_task(2, verbose=True)
+    solver.solve_task(2)
